@@ -213,9 +213,9 @@ pub fn _map_access(access: Access) -> D3D11_CPU_ACCESS_FLAG {
     r
 }
 
-pub fn map_usage(usage: Usage, bind: Bind) -> (D3D11_USAGE, D3D11_CPU_ACCESS_FLAG) {
+pub fn map_usage(usage: Usage, bind: Bind, empty: bool) -> (D3D11_USAGE, D3D11_CPU_ACCESS_FLAG) {
     match usage {
-        Usage::Data => if bind.is_mutable() {
+        Usage::Data => if bind.is_mutable() || empty {
             (D3D11_USAGE_DEFAULT, 0)
         } else {
             (D3D11_USAGE_IMMUTABLE, 0)

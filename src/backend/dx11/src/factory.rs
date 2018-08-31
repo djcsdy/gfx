@@ -146,13 +146,13 @@ impl Factory {
         };
 
         assert!(size >= info.size);
-        let (usage, cpu) = map_usage(info.usage, info.bind);
+        let (usage, cpu) = map_usage(info.usage, info.bind, size == 0);
         let bind = map_bind(info.bind) | subind;
         if info.bind.contains(Bind::RENDER_TARGET) | info.bind.contains(Bind::DEPTH_STENCIL) {
             return Err(buffer::CreationError::UnsupportedBind(info.bind))
         }
         let native_desc = d3d11::D3D11_BUFFER_DESC {
-            ByteWidth: size as _,
+            ByteWidth: if size == 0 { 1 } else { size as _ },
             Usage: usage,
             BindFlags: bind,
             CPUAccessFlags: cpu,
@@ -164,12 +164,12 @@ impl Factory {
             SysMemPitch: 0,
             SysMemSlicePitch: 0,
         };
-        let sub_raw = match raw_data {
-            Some(data) => {
+        let sub_raw = match (raw_data, size > 0) {
+            (Some(data), true) => {
                 sub.pSysMem = data as _;
                 &sub as *const _
             },
-            None => ptr::null(),
+            _ => ptr::null(),
         };
 
         debug!("Creating Buffer with info {:?} and sub-data ?", info/*, sub*/);
@@ -651,7 +651,7 @@ impl core::Factory<R> for Factory {
         	return Err(texture::CreationError::Mipmap);
         }
 
-        let (usage, cpu_access) = map_usage(desc.usage, desc.bind);
+        let (usage, cpu_access) = map_usage(desc.usage, desc.bind, false);
         let tparam = TextureParam {
             levels: desc.levels as _,
             format: match hint {
