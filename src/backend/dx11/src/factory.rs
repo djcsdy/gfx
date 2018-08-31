@@ -152,7 +152,7 @@ impl Factory {
             return Err(buffer::CreationError::UnsupportedBind(info.bind))
         }
         let native_desc = d3d11::D3D11_BUFFER_DESC {
-            ByteWidth: size as _,
+            ByteWidth: if size == 0 { 1 } else { size } as _,
             Usage: usage,
             BindFlags: bind,
             CPUAccessFlags: cpu,
